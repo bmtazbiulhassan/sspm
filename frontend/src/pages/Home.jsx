@@ -1,23 +1,20 @@
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import SignalMap from '../components/SignalMap';
+
+import '../css/Home.css';
 
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
-  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
-  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href
-});
-
-export default function Home() {
+function Home() {
   const [intersections, setIntersections] = useState([]);
-  const [selectedId, setSelectedId] = useState('');
+  const [selectedID, setSelectedID] = useState('');
+  const [view, setView] = useState('map');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const contentRef = useRef(null); // Reference for main interaction area
 
   useEffect(() => {
     axios.get('http://localhost:2500/api/intersections')
@@ -26,52 +23,104 @@ export default function Home() {
   }, []);
 
   const handleGo = () => {
-    if (selectedId) navigate(`/dashboard/${selectedId}`);
+    const match = intersections.find(i => i.signalID === selectedID);
+    if (match) {
+      setError('');
+      navigate(`/dashboard/${selectedID}`);
+    } else {
+      setError('❌ Invalid Signal ID');
+    }
   };
 
-  return (
-    <div style={{ padding: '1rem' }}>
-      <h1>Intersection Dashboard</h1>
-      <input
-        value={selectedId}
-        onChange={(e) => setSelectedId(e.target.value)}
-        placeholder="Enter or select signal ID"
-        style={{ marginRight: '8px' }}
-      />
-      <button onClick={handleGo}>Go</button>
+  // Reset selectedID on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        contentRef.current &&
+        !contentRef.current.contains(event.target)
+      ) {
+        setSelectedID('');
+      }
+    };
 
-      <div style={{ height: '400px', marginTop: '1rem' }}>
-        <MapContainer center={[28.65, -81.35]} zoom={12} style={{ height: '100%', width: '100%' }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {intersections.map((int) => (
-            <Marker
-              key={int._id}
-              position={[int.latitude, int.longitude]}
-              eventHandlers={{ click: () => setSelectedId(int.signalID) }}
-            >
-              <Popup>
-                <strong>{int.intersectionName}</strong><br />
-                Signal ID: {int.signalID}
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="home">
+      {/* Heading */}
+      <div className="heading-section">
+        <h1>Performance Measures & Recommendations</h1>
+        <div>
+          <button
+            onClick={() => setView('map')}
+            className={`heading-button ${view === 'list' ? 'inactive' : 'active'}`}
+          >
+            Signal Map
+          </button>
+          <button
+            onClick={() => setView('list')}
+            className={`heading-button ${view === 'list' ? 'active' : 'inactive'}`}
+          >
+            Signal List
+          </button>
+        </div>
       </div>
 
-      <h2>All Intersections</h2>
-      <ul>
-        {intersections.map((int) => (
-          <li
-            key={int._id}
-            onClick={() => setSelectedId(int.signalID)}
-            style={{ cursor: 'pointer', textDecoration: 'underline', marginBottom: '0.25rem' }}
-          >
-            {int.signalID} - {int.intersectionName}
-          </li>
-        ))}
-      </ul>
+      {/* Main Content */}
+      <div className="main-section" ref={contentRef}>
+        {view === 'map' && (
+          <div className="map-section">            
+            <SignalMap
+              intersections={intersections}
+              selectedID={selectedID}
+              onMarkerClick={setSelectedID}
+            />
+          </div>
+        )}
+
+        {view === 'list' && (
+          <div className="table-section">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Signal ID</th>
+                  <th>SIIA ID</th>
+                  <th>Intersection Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                {intersections.map((int) => (
+                  <tr
+                    key={int._id}
+                    onClick={() => setSelectedID(int.signalID)}
+                    className={selectedID === int.signalID ? 'row-select' : ''}
+                  >
+                    <td>{int.signalID}</td>
+                    <td>{int.siiaID}</td>
+                    <td>{int.intersectionName}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Input Section */}
+      <div className="input-section" ref={contentRef}>
+        <input
+          value={selectedID}
+          onChange={(e) => setSelectedID(e.target.value)}
+          placeholder="Enter Signal ID"
+          className="input-box"
+        />
+        <button onClick={handleGo} className="input-button">Go</button>
+        {error && <p className="error-message">{error}</p>}
+      </div>
     </div>
   );
 }
 
-
+export default Home

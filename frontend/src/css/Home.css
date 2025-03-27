@@ -1,0 +1,125 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    height: 78vh;
+  }
+  
+
+/* Heading Section */
+.heading-section {
+    /* background-color: hsl(220, 7%, 83%); */
+    padding: 1rem;
+}
+
+.heading-section h1 {
+    font-size: 1.5rem;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+.heading-section div {
+    margin-top: 1rem;
+}
+
+.heading-button {
+    font-size: 1.1rem;
+    margin-right: 8px;
+    padding: 0.5rem 1rem;
+}
+
+.heading-button.active {
+    color: white;
+    border: 1px solid white;
+    background-color: #1b6fce;
+}
+
+.heading-button.inactive {
+    color: black;
+    border: 1px solid #1b6fce;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.heading-button.inactive:hover {
+    color: black;
+    border: 1px solid #1b6fce;
+    background-color: white;
+    transform: scale(1.05)
+}
+
+/* Main Section */
+.main-section {
+    height: 450px;
+    /* flex: 1; */
+    overflow-y: auto;
+    /* margin: 0 1rem; */
+}
+
+.map-section {
+    height: 100%;
+    width: 100%;
+}
+
+.table-section {
+    max-height: 100%;
+    overflow-y: auto;
+    margin: 0 1rem;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th {
+    background-color: #ccc;
+}
+
+.custom-table th,
+.custom-table td {
+    border: 1px solid hsl(0, 0%, 0%);
+    padding: 8px;
+    text-align: left;
+}
+
+.row-select {
+    background-color: #1b6fce;
+    color: white;
+}
+
+/* Input Section */
+.input-section {
+    text-align: center;
+    padding: 1rem;
+    border-top: 1px solid #ddd;
+}
+
+.input-box {
+    font-size: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #1b6fce;
+    margin-top: 1rem;
+    margin-right: 0.7rem;
+    width: 200px;
+}
+
+.input-button {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    color: hsl(0, 0%, 0%);
+    border: 1px solid #1b6fce;
+}
+
+.input-button:hover {
+    background-color: #1b6fce;
+    color: hsl(0, 0%, 100%);
+}
+.error-message {
+    color: red;
+    margin-top: 0.5rem;
+}
+
+
+
+  

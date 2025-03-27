@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+/* Set default box model and remove margins */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Set a global font and text color */
+body {
+  font-family: 'Roboto', sans-serif;
+  color: #1f2937; /* dark gray-blue */
+  background-color: #f9fafb; /* light gray background */
+  line-height: 1.5;
+}
+
+/* Optional: Set link colors globally */
+a {
+  color: #1f2937;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #2563eb;
+  text-decoration: none;
+}
+

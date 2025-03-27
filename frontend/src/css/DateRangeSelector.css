@@ -1,0 +1,61 @@
+.date-range-container {
+    width: 100%;
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.date-range-grid {
+display: flex;
+justify-content: space-between;
+gap: 2rem;
+align-items: flex-end;
+flex-wrap: wrap;
+}
+
+.time-input-row {
+display: flex;
+gap: 0.5rem;
+margin-top: 0.5rem;
+align-items: center;
+}
+
+.time-input {
+width: 50px;
+}
+
+.button-group {
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+}
+
+.reset-button {
+background-color: #e5e5e5;
+border: none;
+padding: 0.5rem 1rem;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.select-button {
+color: white;
+border: none;
+padding: 0.5rem 1rem;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.select-button.active {
+background-color: #2563eb;
+}
+
+.select-button.inactive {
+background-color: #ccc;
+}
+
+.range-error {
+color: red;
+margin-top: 0.5rem;
+}
