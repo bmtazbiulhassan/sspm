@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import SignalMap from '../components/SignalMap';
-
 import '../css/Home.css';
-
 
 function Home() {
   const [intersections, setIntersections] = useState([]);
@@ -14,7 +12,7 @@ function Home() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const contentRef = useRef(null); // Reference for main interaction area
+  const inputSectionRef = useRef(null); // Reference for input area
 
   useEffect(() => {
     axios.get('http://localhost:2500/api/intersections')
@@ -32,14 +30,15 @@ function Home() {
     }
   };
 
-  // Reset selectedID on outside click
+  // Clear input and error when clicking outside the input section
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        contentRef.current &&
-        !contentRef.current.contains(event.target)
+        inputSectionRef.current &&
+        !inputSectionRef.current.contains(event.target)
       ) {
         setSelectedID('');
+        setError('');
       }
     };
 
@@ -69,9 +68,9 @@ function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="main-section" ref={contentRef}>
+      <div className="main-section">
         {view === 'map' && (
-          <div className="map-section">            
+          <div className="map-section">
             <SignalMap
               intersections={intersections}
               selectedID={selectedID}
@@ -109,7 +108,7 @@ function Home() {
       </div>
 
       {/* Bottom Input Section */}
-      <div className="input-section" ref={contentRef}>
+      <div className="input-section" ref={inputSectionRef}>
         <input
           value={selectedID}
           onChange={(e) => setSelectedID(e.target.value)}
@@ -123,4 +122,4 @@ function Home() {
   );
 }
 
-export default Home
+export default Home;

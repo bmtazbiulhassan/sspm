@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import ucfsst_logo from '../assets/ucfsst_logo.jpg';
+// import fdot_logo from '../assets/fdot_logo.png';
 import atspm_logo from '../assets/atspm_logo.png';
-import fdot_logo from '../assets/fdot_logo.png';
 
 import '../css/Header.css'; 
 
@@ -38,7 +39,8 @@ function Header() {
       {/* Top logos */}
       <div className="logo-section">
         <img src={atspm_logo} alt="ATSPM Logo" className="logo" />
-        <img src={fdot_logo} alt="FDOT Logo" className="logo" />
+        {/* <img src={fdot_logo} alt="FDOT Logo" className="logo" /> */}
+        <img src={ucfsst_logo} alt="UCFSST Logo" className="logo" />
       </div>
 
       {/* Navigation Bar */}

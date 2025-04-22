@@ -1,9 +1,10 @@
 import DatePicker from 'react-datepicker';
 import { useState } from 'react';
-import 'react-datepicker/dist/react-datepicker.css';
-import '../css/DateRangeSelector.css'; // ✅ import CSS
 
-export default function DateRangeSelector({ onSelect }) {
+import 'react-datepicker/dist/react-datepicker.css';
+import '../css/DateRangeSelector.css';
+
+function DateRangeSelector({ onSelect }) {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
@@ -76,7 +77,7 @@ export default function DateRangeSelector({ onSelect }) {
     end.setHours(eh, em, 0, 0);
 
     if (start.getTime() >= end.getTime()) {
-      setRangeError('❌ Invalid time range: Start must be earlier than End.');
+      setRangeError('❌ Invalid Time Range: Start > End.');
       return;
     }
 
@@ -86,81 +87,106 @@ export default function DateRangeSelector({ onSelect }) {
   };
 
   return (
-    <div className="date-range-container">
-      <div className="date-range-grid">
-        {/* Start Date */}
-        <div>
-          <label><strong>Start Date</strong></label>
-          <DatePicker
-            selected={startDate}
-            onChange={(date) => setStartDate(date)}
-            dateFormat="MM/dd/yyyy"
-            className="form-control"
-          />
-          <div className="time-input-row">
-            <input
-              value={startHour}
-              onChange={(e) => setStartHour(e.target.value)}
-              className="time-input"
+    <div className="date-range-selector">
+      <h2>Date Range</h2>
+
+      <div className="date-range-section">
+        {/* Start Date & Time */}
+        <div className="start-datetime">
+          <h3>Start Date & Time</h3>
+          <div className="datetime">
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              dateFormat="MM/dd/yyyy"
+              className="form-control"
             />
-            <span>:</span>
-            <input
-              value={startMinute}
-              onChange={(e) => setStartMinute(e.target.value)}
-              className="time-input"
-            />
-            <select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)}>
-              <option>AM</option>
-              <option>PM</option>
-            </select>
-            {!startTimeValid && <span style={{ color: 'red' }}>❌</span>}
+            <div className="time-input">
+              <input
+                value={startHour}
+                onChange={(e) => setStartHour(e.target.value)}
+                className="time-input-box"
+              />
+              <span>:</span>
+              <input
+                value={startMinute}
+                onChange={(e) => setStartMinute(e.target.value)}
+                className="time-input-box"
+              />
+              <select
+                className="select-meridem"
+                value={startPeriod}
+                onChange={(e) => setStartPeriod(e.target.value)}
+              >
+                <option>AM</option>
+                <option>PM</option>
+              </select>
+              {!startTimeValid && <span style={{ color: 'red' }}>❌</span>}
+            </div>
           </div>
         </div>
 
-        {/* End Date */}
-        <div>
-          <label><strong>End Date</strong></label>
-          <DatePicker
-            selected={endDate}
-            onChange={(date) => setEndDate(date)}
-            dateFormat="MM/dd/yyyy"
-            className="form-control"
-          />
-          <div className="time-input-row">
-            <input
-              value={endHour}
-              onChange={(e) => setEndHour(e.target.value)}
-              className="time-input"
+        {/* End Date & Time */}
+        <div className="end-datetime">
+          <h3>End Date & Time</h3>
+          <div className="datetime">
+            <DatePicker
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              dateFormat="MM/dd/yyyy"
+              className="form-control"
             />
-            <span>:</span>
-            <input
-              value={endMinute}
-              onChange={(e) => setEndMinute(e.target.value)}
-              className="time-input"
-            />
-            <select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)}>
-              <option>AM</option>
-              <option>PM</option>
-            </select>
-            {!endTimeValid && <span style={{ color: 'red' }}>❌</span>}
+            <div className="time-input">
+              <input
+                value={endHour}
+                onChange={(e) => setEndHour(e.target.value)}
+                className="time-input-box"
+              />
+              <span>:</span>
+              <input
+                value={endMinute}
+                onChange={(e) => setEndMinute(e.target.value)}
+                className="time-input-box"
+              />
+              <select
+                className="select-meridem"
+                value={endPeriod}
+                onChange={(e) => setEndPeriod(e.target.value)}
+              >
+                <option>AM</option>
+                <option>PM</option>
+              </select>
+              {!endTimeValid && <span style={{ color: 'red' }}>❌</span>}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Buttons */}
-        <div className="button-group">
-          <button onClick={handleReset} className="reset-button">
+      <div className="select-section">
+        <div className="reset">
+          <button
+            className="reset-button button-shared"
+            onClick={handleReset}
+          >
             Reset
           </button>
+        </div>
+
+        <hr className="reset-divider" />
+        
+        <div className="select">
           <button
             onClick={handleSelect}
-            className={`select-button ${isSelected ? 'active' : 'inactive'}`}
+            className={`select-button button-shared ${isSelected ? 'active' : 'inactive'}`}
           >
             Select
           </button>
         </div>
       </div>
-
       {rangeError && <p className="range-error">{rangeError}</p>}
     </div>
   );
 }
+
+export default DateRangeSelector;
+

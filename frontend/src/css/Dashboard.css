@@ -1,7 +1,10 @@
 .dashboard {
     display: flex;
-    height: 75vh;
+    flex: 1;
+    min-height: 0;
+    height: 100vh;
 }
+  
   
 /* Sidebar Section */
 .sidebar-section {
@@ -53,91 +56,239 @@
 
 /* Main Section */
 .main-section {
-    width: 100%;
     flex: 1;
-    padding: 1rem;
+    padding: 1rem 2rem;
+    box-sizing: border-box;
     overflow-y: auto;
-}
-
+    height: 100vh;
+  }
+  
 /* .intersection-info {
     margin-bottom: 1rem;
     border-bottom: 1px solid #ccc;
 } */
 
+
+/* Date & Time + Aggregation Section */
+.datetime-aggregation-section {
+    margin-bottom: 2rem;
+}
+
+.aggregation-section {
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    box-sizing: border-box;
+    margin-top: 1.5rem;
+}
+
+.aggregation-section h2 {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
 .aggregation-buttons {
-display: flex;
-gap: 1rem;
-align-items: center;
-flex-wrap: wrap;
-margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .aggregation-buttons button {
-padding: 0.5rem 1rem;
-color: white;
-border: none;
-border-radius: 4px;
+    padding: 0.5rem 1.4rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.aggregation-buttons button.confirm {
-background-color: #2563eb;
+.level-select {
+    background-color: #1b6fce;
+    color: white;
 }
 
-.aggregation-buttons button.disabled {
-background-color: #aaa;
-cursor: not-allowed;
+.level-unselect {
+    background-color: #e5e5e5;
+    color: #333;
 }
 
-.aggregation-buttons button.unselected {
-background-color: #ccc;
+.level-unselect:hover {
+    background-color: #2563eb;
+    color: white;
 }
 
-.revise-button {
-background-color: #e11d48;
-color: white;
-padding: 0.5rem 1rem;
-border: none;
-border-radius: 4px;
-margin-bottom: 2rem;
+.aggregation-divider {
+    border: none;
+    border-top: 1px solid #ccc;
+    width: 100%;
+    margin-bottom: 1rem;
 }
 
-/* Circle filter options */
-.circle-options {
-display: flex;
-gap: 0.5rem;
-flex-wrap: wrap;
-margin-bottom: 1rem;
+.confirm {
+    display: flex;
+    justify-content: flex-end;
 }
 
-.circle-option {
-padding: 0.5rem;
-border-radius: 50%;
-border: 1px solid #aaa;
-cursor: pointer;
-min-width: 40px;
-text-align: center;
+.confirm button {
+    width: 80px;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #ccc;
+    transition: background-color 0.25s ease, opacity 0.25s ease;
 }
 
-.circle-option.active {
-border: 2px solid #2563eb;
+.confirm-active {
+    background-color: #1b6fce;
+    color: white;
+    cursor: pointer;
 }
 
-/* Show figure button */
-.show-figure-button {
-margin-top: 1rem;
-background-color: #2563eb;
-color: white;
-padding: 0.5rem 1.5rem;
-border: none;
-border-radius: 4px;
+.confirm-inactive {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
-/* Visualization box */
-.visualization-box {
-margin-top: 2rem;
-padding: 2rem;
-border: 1px dashed #ccc;
-border-radius: 8px;
-background-color: #eef2f7;
+.confirm-unlock {
+    background-color: #e5e5e5;
+    color: #333;
+    cursor: pointer;
+}
+
+.confirm-unlock:hover {
+    background-color: #2563eb;
+    color: white;
+}
+
+/* GO Button Section */
+.go-button-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.go-button {
+    width: 140px;
+    padding: 0.6rem 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-align: center;
+    border: none;
+    transition: background-color 0.25s ease;
+}
+
+.go-button.active {
+    background-color: #e5e5e5;
+    color: #333;
+    cursor: pointer;
+}
+
+.go-button.active:hover {
+    background-color: #1b6fce;
+    color: white;
+}
+
+.go-button.inactive {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Filter Section */
+.filter-section {
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    box-sizing: border-box;
+    margin-bottom: 2rem;
+
+}
+
+.filter-section h3 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    background-color: #e5e5e5;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 0.5rem 0.5rem;
+    margin-bottom: 1rem;
 }
   
+  
+.multi-box-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.multi-box {
+    padding: 0.5rem 1.4rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.multi-box:hover {
+    background-color: #2563eb;
+    color: white;
+}
+
+.multi-box.selected {
+    background-color: #2563eb;
+    color: white;
+}
+
+.no-data-box {
+    border: 1px dashed #ff4d4f;
+    background-color: #fff2f0;
+    padding: 20px;
+    margin: 30px 0;
+    border-radius: 10px;
+    color: #a8071a;
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+/* Visualization Box */
+.visualization-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 2rem;
+    padding: 2rem;
+    border: 1px dashed #ccc;
+    background-color: #eef2f7;
+}
+  
+.visualization-box h3 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    /* background-color: #e5e5e5; */
+    border: 1px solid #ddd;
+    color: #333;
+    text-align: left;
+  
+    align-self: stretch; /* makes the h3 span full width inside the flex container */
+    padding: 0.5rem 1rem;
+    margin-bottom: 2rem;
+}
+  
+

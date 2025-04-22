@@ -2,11 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios, { mergeConfig } from 'axios';
 
-import PerformanceMeasurePanel from '../components/PerformanceMeasurePanel';
-import RecommendationPanel from '../components/RecommendationPanel';
-import DashboardSidebar from '../components/DashboardSidebar';
-import LineChart from '../components/charts/LineChart';
-
+import DateRangeSelector from '../components/DateRangeSelector';
 import '../css/Dashboard.css';
 
 
@@ -23,11 +19,11 @@ function Dashboard() {
 
   const [signalTypes, setSignalTypes] = useState([]);
   const [laneTypes, setLaneTypes] = useState([]);
-  const [phaseNos, setPhaseNos] = useState([]);
+  const [phaseNumbers, setPhaseNumbers] = useState([]);
 
   const [selectedSignalTypes, setSelectedSignalTypes] = useState([]);
   const [selectedLaneTypes, setSelectedLaneTypes] = useState([]);
-  const [selectedPhaseNos, setSelectedPhaseNos] = useState([]);
+  const [setPhaseNos, setSelectedPhaseNos] = useState([]);
 
   const [showFigure, setShowFigure] = useState(false);
   const [filtersLocked, setFiltersLocked] = useState(false);
@@ -36,8 +32,6 @@ function Dashboard() {
 
   const [data, setData] = useState([]);
   const [noDataFound, setNoDataFound] = useState(false);
-
-  const [filteredData, setFilteredData] = useState([]);
 
   const sections = [
     {
@@ -96,32 +90,8 @@ function Dashboard() {
       .catch(err => console.error('Intersection not found:', err));
   }, [id]);
 
-  useEffect(() => {
-    // Reset everything when sub-option changes
-    setDateSelected(false);
-    setStartDate(null);
-    setEndDate(null);
-    setAggregationLevel('');
-    setAggregationConfirmed(false);
-    setFiltersLocked(false);
-    setShowFigure(false);
-    setFilteredData([]);
-    
-    // Reset fetched data and filter options
-    setData([]);
-    setSignalTypes([]);
-    setLaneTypes([]);
-    setPhaseNos([]);
-    setSelectedSignalTypes([]);
-    setSelectedLaneTypes([]);
-    setSelectedPhaseNos([]);
-    setNoDataFound(false);
-  }, [Array.isArray(selectedSubOption) ? selectedSubOption.join(',') : selectedSubOption]);
-  
-  
   const fetchData = async () => {
-    const subOpt = Array.isArray(selectedSubOption) ? selectedSubOption[0] : selectedSubOption;
-    const featureName = featureNameMap[subOpt];
+    const featureName = featureNameMap[selectedSubOption];
     const aggregationLevelMapped = aggregationMap[aggregationLevel];
 
     try {
@@ -147,18 +117,25 @@ function Dashboard() {
       setData(result);
       setNoDataFound(false);
 
+      const phaseNumbers = [...new Set(result.map(d => d.phaseNo).filter(p => p !== null && p !== undefined))].sort((a, b) => a - b);
       const signalTypes = [...new Set(result.map(d => d.signalType).filter(Boolean))];
       const laneTypes = [...new Set(result.map(d => d.laneType).filter(Boolean))];
-      const phaseNos = [...new Set(result.map(d => d.phaseNo).filter(p => p !== null && p !== undefined))].sort((a, b) => a - b);
-     
+
+      setPhaseNumbers(phaseNumbers.length > 0 ? phaseNumbers : ['N/A']);
       setSignalTypes(signalTypes.length > 0 ? signalTypes : ['N/A']);
       setLaneTypes(laneTypes.length > 0 ? laneTypes : ['N/A']);
-      setPhaseNos(phaseNos.length > 0 ? phaseNos : ['N/A']);
 
     } catch (err) {
       console.error('Fetch Data Error:', err);
       setData([]);
       setNoDataFound(true);
+    }
+  };
+
+  const handleSubOptionClick = (opt) => {
+    if (selectedSubOption !== opt) {
+      resetAll();
+      setSelectedSubOption(opt);
     }
   };
 
@@ -170,18 +147,27 @@ function Dashboard() {
   
     setSignalTypes([]);
     setLaneTypes([]);
-    setPhaseNos([]);
+    setPhaseNumbers([]);
   
     setSelectedSignalTypes([]);
     setSelectedLaneTypes([]);
     setSelectedPhaseNos([]);
   
-    setData([]); 
-    setNoDataFound(false); 
+    setData([]); // <-- Important: clear fetched data
+    setNoDataFound(false); // <-- Important: reset no-data flag
   
     setShowFigure(false);
     setStartDate(null);
     setEndDate(null);
+  };
+  
+
+  const toggleItem = (item, selectedItems, setSelectedItems) => {
+    if (selectedItems.includes(item)) {
+      setSelectedItems(selectedItems.filter(i => i !== item));
+    } else {
+      setSelectedItems([...selectedItems, item]);
+    }
   };
 
   const renderMultiSelectOptions = (label, items, selectedItems, setSelectedItems, mapLabels = false) => {
@@ -196,8 +182,8 @@ function Dashboard() {
     };
   
     return (
-      <div className="filter-section">
-        <h3>{label}</h3>
+      <div className="filter-box">
+        <label className="filter-label">{label}</label>
         <div className="multi-box-container">
           {displayItems.map((item, i) => {
             const display = mapLabels && signalTypeLabelMap[item] ? signalTypeLabelMap[item] : item;
@@ -220,107 +206,125 @@ function Dashboard() {
 
   const goEnabled = dateSelected && aggregationConfirmed;
 
-  const allFiltersSelected = (
-    (signalTypes.includes('N/A') || selectedSignalTypes.length > 0) &&
-    (laneTypes.includes('N/A') || selectedLaneTypes.length > 0) &&
-    (phaseNos.includes('N/A') || selectedPhaseNos.length > 0)
-  );  
-
   return (
     <div className="dashboard">
-      <DashboardSidebar
-        sections={sections}
-        expandedSection={expandedSection}
-        setExpandedSection={setExpandedSection}
-        selectedSubOption={selectedSubOption}
-        setSelectedSubOption={setSelectedSubOption}
-        resetAll={resetAll}
-      />
+      <aside className="sidebar-section">
+        {sections.map((section) => (
+          <div key={section.title} className="sidebar-box">
+            <h3
+              onClick={() => {
+                const willCollapse = expandedSection === section.title;
+    
+                if (willCollapse) {
+                  // Only collapse if same section clicked
+                  setExpandedSection('');
+                  resetAll();
+                  setSelectedSubOption('');
+                } else {
+                  // If switching to a new section
+                  resetAll(); // Clear all filter/data state
+                  setExpandedSection(section.title);
+                  setSelectedSubOption('');
+                }
+              }}              
+              className={expandedSection === section.title ? 'active' : ''}
+            >
+              {section.title}
+            </h3>
+            {expandedSection === section.title && (
+              <div className="sidebar-radio">
+                {section.options.map(opt => (
+                  <label key={opt} className="radio-option">
+                    <input
+                      type="radio"
+                      name={section.title}
+                      value={opt}
+                      checked={selectedSubOption === opt}
+                      onChange={() => handleSubOptionClick(opt)}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </aside>
 
       <main className="main-section">
-        {/* Panel for Performance Measures */}
-        {typeof selectedSubOption === 'string' &&
-          sections.find(s => s.title === 'Performance Measures')?.options.includes(selectedSubOption) &&
-          !filtersLocked && (
-            <PerformanceMeasurePanel
-              selectedSubOption={selectedSubOption}
-              setDateSelected={setDateSelected}
-              setStartDate={setStartDate}
-              setEndDate={setEndDate}
-              aggregationLevel={aggregationLevel}
-              setAggregationLevel={setAggregationLevel}
-              aggregationConfirmed={aggregationConfirmed}
-              setAggregationConfirmed={setAggregationConfirmed}
-              onGoClick={() => {
-                fetchData();
-                setFiltersLocked(true);
-              }}
-              goEnabled={goEnabled}
-            />
-        )}
+        {sections.find(s => s.title === 'Performance Measures')?.options.includes(selectedSubOption) && !filtersLocked && (
+          <>
+            <div className="datetime-aggregation-section">
+              <DateRangeSelector
+                key={selectedSubOption}
+                onSelect={({ start, end }) => {
+                  setDateSelected(true);
+                  setStartDate(start);
+                  setEndDate(end);
+                }}
+              />
 
-        {/* Panel for Recommendations */}
-        {Array.isArray(selectedSubOption) &&
-          selectedSubOption.length > 0 &&
-          expandedSection === 'Recommendations' &&
-          !filtersLocked && (
-            <RecommendationPanel
-              selectedSubOption={selectedSubOption[0]} // Use first selected for now
-              setDateSelected={setDateSelected}
-              setStartDate={setStartDate}
-              setEndDate={setEndDate}
-              aggregationLevel={aggregationLevel}
-              setAggregationLevel={setAggregationLevel}
-              aggregationConfirmed={aggregationConfirmed}
-              setAggregationConfirmed={setAggregationConfirmed}
-              onGoClick={() => {
-                fetchData();
-                setFiltersLocked(true);
-              }}
-              goEnabled={goEnabled}
-            />
+              <div className="aggregation-section">
+                <h2>Aggregation Level</h2>
+                <div className="aggregation-buttons">
+                  {['Cycle', '15 min', '30 min', '60 min'].map(level => (
+                    <button
+                      key={level}
+                      onClick={() => {
+                        setAggregationLevel(level);
+                        setAggregationConfirmed(false);
+                      }}
+                      className={
+                        aggregationLevel === level
+                          ? 'level-select'
+                          : 'level-unselect'
+                      }
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+
+                <hr className='aggregation-divider' />
+
+                <div className="confirm">
+                  <button
+                    disabled={!aggregationLevel}
+                    onClick={() => setAggregationConfirmed(true)}
+                    className={
+                      aggregationLevel && !aggregationConfirmed
+                        ? 'confirm-unlock'
+                        : aggregationConfirmed
+                          ? 'confirm-active'
+                          : 'confirm-inactive'
+                    }
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="go-button-section">
+              <button
+                className={`go-button ${goEnabled ? 'active' : 'inactive'}`}
+                disabled={!goEnabled}
+                onClick={() => {
+                  fetchData();
+                  setFiltersLocked(true);
+                }}
+              >
+                Go
+              </button>
+            </div>
+          </>
         )}
 
         {data.length > 0 && !noDataFound && (
           <>
-            {/* Render filter options */}
             {renderMultiSelectOptions('Signal Type', signalTypes, selectedSignalTypes, setSelectedSignalTypes, true)}
             {renderMultiSelectOptions('Lane Type', laneTypes, selectedLaneTypes, setSelectedLaneTypes)}
-            {renderMultiSelectOptions('Phase Number', phaseNos, selectedPhaseNos, setSelectedPhaseNos)}
-
-            {/* Go button enabled only if all filters are selected or marked N/A */}
-            <div className="go-button-section">
-              <button
-                className={`go-button ${
-                  (signalTypes.includes('N/A') || selectedSignalTypes.length > 0) &&
-                  (laneTypes.includes('N/A') || selectedLaneTypes.length > 0) &&
-                  (phaseNos.includes('N/A') || selectedPhaseNos.length > 0)
-                    ? 'active'
-                    : 'inactive'
-                }`}
-                disabled={
-                  !(
-                    (signalTypes.includes('N/A') || selectedSignalTypes.length > 0) &&
-                    (laneTypes.includes('N/A') || selectedLaneTypes.length > 0) &&
-                    (phaseNos.includes('N/A') || selectedPhaseNos.length > 0)
-                  )
-                }
-                onClick={() => {
-                  const filtered = data.filter(item => {
-                    const signalMatch = signalTypes.includes('N/A') || selectedSignalTypes.includes(item.signalType);
-                    const laneMatch = laneTypes.includes('N/A') || selectedLaneTypes.includes(item.laneType);
-                    const phaseMatch = phaseNos.includes('N/A') || selectedPhaseNos.includes(item.phaseNo);
-                    return signalMatch && laneMatch && phaseMatch;
-                  });
-                
-                  console.log('Filtered Data:', filtered);
-                  setFilteredData(filtered);      // ✅ Save to state
-                  setShowFigure(true);            // ✅ Show the chart
-                }}                
-              >
-                Create Chart
-              </button>
-            </div>
+            {renderMultiSelectOptions('Phase Number', phaseNumbers, setPhaseNos, setSelectedPhaseNos)}
           </>
         )}
 
@@ -329,7 +333,7 @@ function Dashboard() {
             <h4>No data found for the following condition:</h4>
             <ul>
               <li><strong>Signal ID:</strong> {id}</li>
-              <li><strong>Feature Name:</strong> {Array.isArray(selectedSubOption) ? selectedSubOption.join(', ') : selectedSubOption}</li>
+              <li><strong>Feature Name:</strong> {selectedSubOption}</li>
               <li><strong>Aggregation:</strong> {aggregationLevel}</li>
               <li><strong>Start:</strong> {startDate?.toLocaleString()}</li>
               <li><strong>End:</strong> {endDate?.toLocaleString()}</li>
@@ -339,8 +343,8 @@ function Dashboard() {
 
         {showFigure && (
           <div className="visualization-box">
-            <h3>Chart Area</h3>
-            <LineChart data={filteredData} />
+            <h3>📊 Visualization Area</h3>
+            <p>This will display filtered data based on your selections.</p>
           </div>
         )}
       </main>
