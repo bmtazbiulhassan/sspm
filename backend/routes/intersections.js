@@ -14,4 +14,20 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET intersection by signalID
+router.get('/:signalID', async (req, res) => {
+  try {
+    const signalID = req.params.signalID.toString(); // Make sure it's a string
+    const intersection = await Intersection.findOne({ signalID });
+
+    if (!intersection) {
+      return res.status(404).json({ error: 'Intersection not found' });
+    }
+
+    res.json(intersection);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching intersection by signalID' });
+  }
+});
+
 module.exports = router;

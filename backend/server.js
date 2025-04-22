@@ -17,8 +17,8 @@ connectDB();
 const intersectionRoutes = require('./routes/intersections');
 app.use('/api/intersections', intersectionRoutes);
 
-// const dataRouter = require('./routes/data');
-// app.use('/api/data', dataRouter);
+const measureRoutes = require('./routes/measures');
+app.use('/api/measures', measureRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
