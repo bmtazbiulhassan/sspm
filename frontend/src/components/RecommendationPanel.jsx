@@ -1,6 +1,6 @@
 import React from 'react';
 
-import DateRangeSelector from './DateRangeSelector';
+import MonthSelector from './MonthSelector';
 import '../css/Dashboard.css';
 
 function RecommendationPanel({
@@ -20,14 +20,14 @@ function RecommendationPanel({
   return (
     <>
       <div className="datetime-aggregation-section">
-        {/* Date Range Selector */}
-        <DateRangeSelector
-          key={selectedSubOption}    // Reset the date picker if the selected option changes
-          onSelect={({ start, end }) => {
-            setDateSelected(true);   // Mark that a date has been selected
-            setStartDate(start);     // Update the start date in state
-            setEndDate(end);         // Update the end date in state
-          }}
+        {/* Month Selector for Recommendations */}
+        <MonthSelector
+        key={selectedSubOption}
+        onSelect={({ start, end }) => {
+            setDateSelected(true);   // Still use the same boolean
+            setStartDate(start);     // Start of the month
+            setEndDate(end);         // End of the month
+        }}
         />
 
         {/* Aggregation level selector */}

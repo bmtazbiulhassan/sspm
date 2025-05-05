@@ -163,16 +163,80 @@
 
 
 /* Month Selector */
+/* Month Selector Section */
+.month-selector-container {
+    width: 100%;
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.month-selector-container h2 {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
 .month-selector {
     display: flex;
-    align-items: center;
+    justify-content: center;
     gap: 1rem;
-    margin-top: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.month-selector select, .month-selector input.year-input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    text-align: center;
+    border: 1px solid #ccc;
+    transition: border-color 0.2s ease-in-out;
+    background-color: white;
+}
+
+.month-selector select:focus,
+    .month-selector input.year-input:focus {
+    border-color: #1b6fce;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .year-input {
-    width: 80px;
-    padding: 6px;
-    font-size: 14px;
+    width: 100px;
 }
+
+/* Apply Button Alignment */
+.month-select-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.month-select-button {
+    width: 80px;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.month-select-button.inactive {
+    background-color: #e5e5e5;
+    color: #333;
+}
+
+.month-select-button.active {
+    background-color: #1b6fce;
+    color: white;
+}
+
+.month-select-button.inactive:hover {
+    background-color: #1b6fce;
+    color: white;
+}
+  
   

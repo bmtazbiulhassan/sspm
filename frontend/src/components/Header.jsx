@@ -52,11 +52,11 @@ function Header() {
           </button>
           {openDropdown === 'dashboard' && (
             <div className="dropdown-panel">
-              <div className="dropdown-item" onClick={() => handleNavigate('/')}>
-                Performance Measures & Recommendations
-              </div>
               <div className="dropdown-item" onClick={() => handleNavigate('/ranking')}>
-                Intersection Ranking
+                Rank View
+              </div>
+              <div className="dropdown-item" onClick={() => handleNavigate('/')}>
+                Recommendation View
               </div>
             </div>
           )}

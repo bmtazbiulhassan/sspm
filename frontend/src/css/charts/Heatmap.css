@@ -1,0 +1,100 @@
+.heatmap-block {
+    background-color: #f5f5f5;
+    padding: 20px;
+    margin-bottom: 40px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .heatmap-block h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .zoom-toolbar {
+    pointer-events: all;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+  }
+  
+  .zoom-button {
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  
+  .zoom-btn-rect {
+    fill: rgba(0, 0, 0, 0.4);
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+  }
+  
+  .zoom-button:hover .zoom-btn-rect {
+    fill: rgba(0, 0, 0, 0.6);
+    stroke: rgba(255, 255, 255, 0.4);
+  }
+  
+  svg {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .axis text {
+    font-size: 12px;
+    fill: #333;
+  }
+  
+  .axis path,
+  .axis line {
+    stroke: #ccc;
+    shape-rendering: crispEdges;
+  }
+  
+  rect {
+    stroke: #fff;
+    stroke-width: 0.5px;
+  }
+  
+  .heatmap-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .heatmap-toolbar .zoom-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: 8px;
+  }
+  
+  .heatmap-toolbar .zoom-btn-rect {
+    fill: rgba(0, 0, 0, 0.4);
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1;
+  }
+  
+  .heatmap-toolbar .zoom-button:hover .zoom-btn-rect {
+    fill: rgba(0, 0, 0, 0.6);
+    stroke: rgba(255, 255, 255, 0.4);
+  }
+  
+  .heatmap-block svg {
+    display: block;
+    margin: auto;
+  }
+
+  .legend text {
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .heatmap-block svg {
+    overflow: visible;
+  }
+  

@@ -4,7 +4,7 @@ import '../css/Footer.css';
 function Footer() {
   return (
     <footer className="footer">
-      <div>
+      {/* <div>
         Developed by{' '}
         <a
           href="https://www.linkedin.com/in/bmtazbiulhassan/"
@@ -13,7 +13,7 @@ function Footer() {
         >
           <strong>B M Tazbiul Hassan Anik</strong> 
         </a>
-      </div>
+      </div> */}
       <div>
         Supported by{' '}
         <a

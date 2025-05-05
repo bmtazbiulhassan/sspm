@@ -20,7 +20,6 @@ const LineChart = ({ data }) => {
     'conflictPropensity': 'Pedestrian-Vehicle (Right-Turn) Conflict Propensity',
     'duration': 'Duration (Sec)'
   };
-  
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -85,7 +84,7 @@ const LineChart = ({ data }) => {
 
     const xGridGroup = g.append('g')
       .attr('class', 'x-grid')
-      .attr('transform', `translate(0,${height})`);    
+      .attr('transform', `translate(0,${height})`);
 
     const yGridGroup = g.append('g')
       .attr('class', 'y-grid');
@@ -103,8 +102,8 @@ const LineChart = ({ data }) => {
     lineGroup.attr("clip-path", "url(#clip)");
 
     const brush = d3.brushX()
-     .extent([[0, 0], [width, height]])
-     .on("end", (event) => {
+      .extent([[0, 0], [width, height]])
+      .on("end", (event) => {
         if (!event.selection) return;
         const [x0, x1] = event.selection.map(x.invert);
         x.domain([x0, x1]);
@@ -121,10 +120,8 @@ const LineChart = ({ data }) => {
 
       y.domain([0, d3.max(visibleValues, d => +('value' in d ? d.value : d.mean))]).nice();
 
-      // Update brush extent dynamically (fixes resizing/zoom box issue)
       brush.extent([[0, 0], [width, height]]);
-      g.select('.brush').call(brush); 
-
+      g.select('.brush').call(brush);
 
       const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat('%Y-%m-%d %H:%M')).ticks(6);
       const yAxis = d3.axisLeft(y).tickFormat(d3.format('.0f'));
@@ -177,7 +174,7 @@ const LineChart = ({ data }) => {
       .attr('text-anchor', 'middle')
       .style('font-size', '20px')
       .style('font-weight', 'bold')
-      .text(`Trendline`);
+      .text('Trendline');
 
     g.append('text')
       .attr('text-anchor', 'middle')
@@ -194,80 +191,82 @@ const LineChart = ({ data }) => {
       .style('font-size', '16px')
       .text(featureNameMap[data[0]?.featureName] || data[0]?.featureName || 'Value');
 
-    
-    // Zoom Toolbar inside chart area (top-right corner inside grid)
     const toolbar = g.append('g')
-    .attr('class', 'zoom-toolbar')
-    .attr('transform', `translate(${width - 160}, 10)`); // 10px from top, align to right
+      .attr('class', 'zoom-toolbar')
+      .attr('transform', `translate(${width - 160}, 10)`);
 
     const iconPaths = {
-        zoomIn: "M14 2v24M2 14h24",                       // +
-        zoomOut: "M2 14h24",                              // -
-        reset: "M4 14a10 10 0 1 1 2 6l-2-6h6",            // reset loop
-        download: "M12 2v14m0 0l-4-4m4 4l4-4M4 22h16"     // down arrow
-      };
-      
-      const buttonData = [
-        { key: "zoomIn", title: "Zoom In", onClick: () => {
-            const [start, end] = x.domain();
-            const range = end - start;
-            const mid = new Date(start.getTime() + range / 2);
-            x.domain([new Date(mid.getTime() - range / 4), new Date(mid.getTime() + range / 4)]);
-            drawChart();
-          }},
-        { key: "zoomOut", title: "Zoom Out", onClick: () => {
-            const [start, end] = x.domain();
-            const range = end - start;
-            const mid = new Date(start.getTime() + range / 2);
-            x.domain([new Date(mid.getTime() - range), new Date(mid.getTime() + range)]);
-            drawChart();
-          }},
-        { key: "reset", title: "Reset Zoom", onClick: () => {
-            x.domain(d3.extent(data.map(d => parseTime(d.timeStamp))));
-            drawChart();
-          }},
-        { key: "download", title: "Download SVG", onClick: () => {
-            const svgEl = containerRef.current.querySelector('svg');
-            const serializer = new XMLSerializer();
-            const source = serializer.serializeToString(svgEl);
-            const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'chart.svg';
-            link.click();
-            URL.revokeObjectURL(url);
-          }},
-      ];
-      
-      buttonData.forEach((btn, i) => {
-        const group = toolbar.append('g')
-          .attr('class', 'zoom-button')
-          .attr('transform', `translate(${i * 38}, 0)`)
-          .style('cursor', 'pointer')
-          .on('click', btn.onClick);
-      
-        group.append('rect')
-          .attr('width', 28)
-          .attr('height', 28)
-          .attr('rx', 0)
-          .attr('ry', 0)
-          .attr('class', 'zoom-btn-rect');
-      
-        // Add SVG path icon
-        group.append('path')
-          .attr('d', iconPaths[btn.key])
-          .attr('transform', 'translate(4,4) scale(0.75)')
-          .attr('stroke', 'white')
-          .attr('stroke-width', 2)
-          .attr('fill', 'none')
-          .attr('stroke-linecap', 'round');
-      
-        // Tooltip (title element)
-        group.append('title').text(btn.title);
-      });
-      
-    
+      zoomIn: "M14 2v24M2 14h24",
+      zoomOut: "M2 14h24",
+      reset: "M4 14a10 10 0 1 1 2 6l-2-6h6",
+      download: "M12 2v14m0 0l-4-4m4 4l4-4M4 22h16"
+    };
+
+    const buttonData = [
+      {
+        key: "zoomIn", title: "Zoom In", onClick: () => {
+          const [start, end] = x.domain();
+          const range = end - start;
+          const mid = new Date(start.getTime() + range / 2);
+          x.domain([new Date(mid.getTime() - range / 4), new Date(mid.getTime() + range / 4)]);
+          drawChart();
+        }
+      },
+      {
+        key: "zoomOut", title: "Zoom Out", onClick: () => {
+          const [start, end] = x.domain();
+          const range = end - start;
+          const mid = new Date(start.getTime() + range / 2);
+          x.domain([new Date(mid.getTime() - range), new Date(mid.getTime() + range)]);
+          drawChart();
+        }
+      },
+      {
+        key: "reset", title: "Reset Zoom", onClick: () => {
+          x.domain(d3.extent(data.map(d => parseTime(d.timeStamp))));
+          drawChart();
+        }
+      },
+      {
+        key: "download", title: "Download SVG", onClick: () => {
+          const svgEl = containerRef.current.querySelector('svg');
+          const serializer = new XMLSerializer();
+          const source = serializer.serializeToString(svgEl);
+          const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'chart.svg';
+          link.click();
+          URL.revokeObjectURL(url);
+        }
+      }
+    ];
+
+    buttonData.forEach((btn, i) => {
+      const group = toolbar.append('g')
+        .attr('class', 'zoom-button')
+        .attr('transform', `translate(${i * 38}, 0)`)
+        .style('cursor', 'pointer')
+        .on('click', btn.onClick);
+
+      group.append('rect')
+        .attr('width', 28)
+        .attr('height', 28)
+        .attr('rx', 0)
+        .attr('ry', 0)
+        .attr('class', 'zoom-btn-rect');
+
+      group.append('path')
+        .attr('d', iconPaths[btn.key])
+        .attr('transform', 'translate(4,4) scale(0.75)')
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2)
+        .attr('fill', 'none')
+        .attr('stroke-linecap', 'round');
+
+      group.append('title').text(btn.title);
+    });
 
   }, [data, containerWidth]);
 

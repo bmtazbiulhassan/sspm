@@ -1,14 +1,14 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import axios, { mergeConfig } from 'axios';
+import axios from 'axios';
 
 import PerformanceMeasurePanel from '../components/PerformanceMeasurePanel';
 import RecommendationPanel from '../components/RecommendationPanel';
 import DashboardSidebar from '../components/DashboardSidebar';
 import LineChart from '../components/charts/LineChart';
+import Heatmap from '../components/charts/Heatmap';
 
 import '../css/Dashboard.css';
-
 
 function Dashboard() {
   const { id } = useParams();
@@ -36,14 +36,17 @@ function Dashboard() {
 
   const [data, setData] = useState([]);
   const [noDataFound, setNoDataFound] = useState(false);
-
   const [filteredData, setFilteredData] = useState([]);
 
+  const [recommendationDataMap, setRecommendationDataMap] = useState({});
+  const [selectedKMap, setSelectedKMap] = useState({});
+  
+
   const sections = [
-    {
-      title: 'Data Quality',
-      options: ['Signal Sequence (1-8-10-11)']
-    },
+    // {
+    //   title: 'Data Quality',
+    //   options: ['Signal Sequence (1-8-10-11)']
+    // },
     {
       title: 'Performance Measures',
       options: [
@@ -62,6 +65,7 @@ function Dashboard() {
   ];
 
   const featureNameMap = {
+    // Performance
     'Duration': 'duration',
     'Volume': 'volume',
     'Occupancy': 'occupancy',
@@ -72,7 +76,12 @@ function Dashboard() {
     'Red Light Running': 'runningFlag',
     'Pedestrian Activity Indicator': 'pedestrianActivity',
     'Pedestrian Delay': 'pedestrianDelay',
-    'Pedestrian-Vehicle (Right-Turn) Conflict Propensity': 'conflictPropensity'
+    'Pedestrian-Vehicle (Right-Turn) Conflict Propensity': 'conflictPropensity',
+
+    // Recommendation
+    'Pedestrian Recall': 'pedestrianPresenceProbability',
+    'Leading Pedestrian Interval': 'conflictPropensity',
+    'No Right-Turn On Red': 'conflictPropensity'
   };
 
   const aggregationMap = {
@@ -97,7 +106,6 @@ function Dashboard() {
   }, [id]);
 
   useEffect(() => {
-    // Reset everything when sub-option changes
     setDateSelected(false);
     setStartDate(null);
     setEndDate(null);
@@ -106,8 +114,6 @@ function Dashboard() {
     setFiltersLocked(false);
     setShowFigure(false);
     setFilteredData([]);
-    
-    // Reset fetched data and filter options
     setData([]);
     setSignalTypes([]);
     setLaneTypes([]);
@@ -116,9 +122,9 @@ function Dashboard() {
     setSelectedLaneTypes([]);
     setSelectedPhaseNos([]);
     setNoDataFound(false);
+    setRecommendationDataMap({});
   }, [Array.isArray(selectedSubOption) ? selectedSubOption.join(',') : selectedSubOption]);
-  
-  
+
   const fetchData = async () => {
     const subOpt = Array.isArray(selectedSubOption) ? selectedSubOption[0] : selectedSubOption;
     const featureName = featureNameMap[subOpt];
@@ -136,7 +142,6 @@ function Dashboard() {
       });
 
       const result = res.data || [];
-      // console.log(result);
 
       if (result.length === 0) {
         setData([]);
@@ -150,11 +155,10 @@ function Dashboard() {
       const signalTypes = [...new Set(result.map(d => d.signalType).filter(Boolean))];
       const laneTypes = [...new Set(result.map(d => d.laneType).filter(Boolean))];
       const phaseNos = [...new Set(result.map(d => d.phaseNo).filter(p => p !== null && p !== undefined))].sort((a, b) => a - b);
-     
+
       setSignalTypes(signalTypes.length > 0 ? signalTypes : ['N/A']);
       setLaneTypes(laneTypes.length > 0 ? laneTypes : ['N/A']);
       setPhaseNos(phaseNos.length > 0 ? phaseNos : ['N/A']);
-
     } catch (err) {
       console.error('Fetch Data Error:', err);
       setData([]);
@@ -162,31 +166,87 @@ function Dashboard() {
     }
   };
 
+  const fetchRecommendationData = async () => {
+    const month = startDate.getMonth() + 1;
+    const year = startDate.getFullYear();
+    const aggregationLevelMapped = aggregationMap[aggregationLevel];
+
+    const newDataMap = {};
+
+    for (const subOpt of selectedSubOption) {
+      const featureName = featureNameMap[subOpt];
+      if (!featureName) continue;
+
+      try {
+        const res = await axios.get('http://localhost:2500/api/recommendation', {
+          params: {
+            signalID: id,
+            featureName,
+            aggregation: aggregationLevelMapped,
+            month,
+            year
+          }
+        });
+
+        newDataMap[subOpt] = res.data || [];
+      } catch (err) {
+        console.error(`Error fetching recommendation data for ${subOpt}:`, err);
+        newDataMap[subOpt] = [];
+      }
+    }
+
+    setRecommendationDataMap(newDataMap);
+
+    const allPhases = Object.values(newDataMap)
+      .flat()
+      .map(d => d.phaseNo)
+      .filter((val, i, arr) => val != null && arr.indexOf(val) === i)
+      .sort((a, b) => a - b);
+
+    setPhaseNos(allPhases.length > 0 ? allPhases : ['N/A']);
+
+    // ✅ Auto-select lowest k value
+    const newSelectedKMap = {};
+    Object.entries(newDataMap).forEach(([subOpt, values]) => {
+      const kValues = values.map(d => d.k).filter(k => k != null);
+      if (kValues.length > 0) {
+        newSelectedKMap[subOpt] = Math.min(...kValues);
+      }
+    });
+    setSelectedKMap(newSelectedKMap);
+
+    const allValues = Object.values(newDataMap).flat();
+    if (allValues.length === 0) {
+      setNoDataFound(true);
+    } else {
+      setNoDataFound(false);
+    }
+
+    // ✅ Log the entire dict after it's built
+    console.log('✅ Full Recommendation Data Map:', newDataMap);
+  };
+
   const resetAll = () => {
     setDateSelected(false);
     setAggregationLevel('');
     setAggregationConfirmed(false);
     setFiltersLocked(false);
-  
     setSignalTypes([]);
     setLaneTypes([]);
     setPhaseNos([]);
-  
     setSelectedSignalTypes([]);
     setSelectedLaneTypes([]);
     setSelectedPhaseNos([]);
-  
-    setData([]); 
-    setNoDataFound(false); 
-  
+    setData([]);
+    setNoDataFound(false);
     setShowFigure(false);
     setStartDate(null);
     setEndDate(null);
+    setRecommendationDataMap({});
   };
 
   const renderMultiSelectOptions = (label, items, selectedItems, setSelectedItems, mapLabels = false) => {
     const displayItems = items.length > 0 ? items : ['N/A'];
-  
     const toggleItem = (item) => {
       if (selectedItems.includes(item)) {
         setSelectedItems(selectedItems.filter(i => i !== item));
@@ -194,7 +254,7 @@ function Dashboard() {
         setSelectedItems([...selectedItems, item]);
       }
     };
-  
+
     return (
       <div className="filter-section">
         <h3>{label}</h3>
@@ -202,7 +262,6 @@ function Dashboard() {
           {displayItems.map((item, i) => {
             const display = mapLabels && signalTypeLabelMap[item] ? signalTypeLabelMap[item] : item;
             const isSelected = selectedItems.includes(item);
-  
             return (
               <div
                 key={i}
@@ -216,7 +275,7 @@ function Dashboard() {
         </div>
       </div>
     );
-  };  
+  };
 
   const goEnabled = dateSelected && aggregationConfirmed;
 
@@ -224,7 +283,7 @@ function Dashboard() {
     (signalTypes.includes('N/A') || selectedSignalTypes.length > 0) &&
     (laneTypes.includes('N/A') || selectedLaneTypes.length > 0) &&
     (phaseNos.includes('N/A') || selectedPhaseNos.length > 0)
-  );  
+  );
 
   return (
     <div className="dashboard">
@@ -257,7 +316,8 @@ function Dashboard() {
               }}
               goEnabled={goEnabled}
             />
-        )}
+          )
+        }
 
         {/* Panel for Recommendations */}
         {Array.isArray(selectedSubOption) &&
@@ -265,7 +325,7 @@ function Dashboard() {
           expandedSection === 'Recommendations' &&
           !filtersLocked && (
             <RecommendationPanel
-              selectedSubOption={selectedSubOption[0]} // Use first selected for now
+              selectedSubOption={selectedSubOption[0]}
               setDateSelected={setDateSelected}
               setStartDate={setStartDate}
               setEndDate={setEndDate}
@@ -274,49 +334,63 @@ function Dashboard() {
               aggregationConfirmed={aggregationConfirmed}
               setAggregationConfirmed={setAggregationConfirmed}
               onGoClick={() => {
-                fetchData();
+                fetchRecommendationData();
                 setFiltersLocked(true);
               }}
               goEnabled={goEnabled}
             />
-        )}
+          )
+        }
 
-        {data.length > 0 && !noDataFound && (
+        {/* Filter Options and Chart Render */}
+        {((data.length > 0 && !noDataFound) || Object.keys(recommendationDataMap).length > 0) && (
           <>
-            {/* Render filter options */}
-            {renderMultiSelectOptions('Signal Type', signalTypes, selectedSignalTypes, setSelectedSignalTypes, true)}
-            {renderMultiSelectOptions('Lane Type', laneTypes, selectedLaneTypes, setSelectedLaneTypes)}
-            {renderMultiSelectOptions('Phase Number', phaseNos, selectedPhaseNos, setSelectedPhaseNos)}
+            {/* For Performance Measures: render all 3 filters */}
+            {expandedSection === 'Performance Measures' && (
+              <>
+                {renderMultiSelectOptions('Signal Type', signalTypes, selectedSignalTypes, setSelectedSignalTypes, true)}
+                {renderMultiSelectOptions('Lane Type', laneTypes, selectedLaneTypes, setSelectedLaneTypes)}
+                {renderMultiSelectOptions('Phase Number', phaseNos, selectedPhaseNos, setSelectedPhaseNos)}
+              </>
+            )}
 
-            {/* Go button enabled only if all filters are selected or marked N/A */}
+            {/* For Recommendations: render only Phase Number filter */}
+            {expandedSection === 'Recommendations' && (
+              <>
+                {renderMultiSelectOptions('Phase Number', phaseNos, selectedPhaseNos, setSelectedPhaseNos)}
+              </>
+            )}
+
             <div className="go-button-section">
               <button
                 className={`go-button ${
-                  (signalTypes.includes('N/A') || selectedSignalTypes.length > 0) &&
-                  (laneTypes.includes('N/A') || selectedLaneTypes.length > 0) &&
-                  (phaseNos.includes('N/A') || selectedPhaseNos.length > 0)
-                    ? 'active'
-                    : 'inactive'
+                  selectedPhaseNos.length > 0 ? 'active' : 'inactive'
                 }`}
-                disabled={
-                  !(
-                    (signalTypes.includes('N/A') || selectedSignalTypes.length > 0) &&
-                    (laneTypes.includes('N/A') || selectedLaneTypes.length > 0) &&
-                    (phaseNos.includes('N/A') || selectedPhaseNos.length > 0)
-                  )
-                }
+                disabled={selectedPhaseNos.length === 0}
                 onClick={() => {
-                  const filtered = data.filter(item => {
-                    const signalMatch = signalTypes.includes('N/A') || selectedSignalTypes.includes(item.signalType);
-                    const laneMatch = laneTypes.includes('N/A') || selectedLaneTypes.includes(item.laneType);
-                    const phaseMatch = phaseNos.includes('N/A') || selectedPhaseNos.includes(item.phaseNo);
-                    return signalMatch && laneMatch && phaseMatch;
-                  });
-                
-                  console.log('Filtered Data:', filtered);
-                  setFilteredData(filtered);      // ✅ Save to state
-                  setShowFigure(true);            // ✅ Show the chart
-                }}                
+                  if (expandedSection === 'Performance Measures') {
+                    const filtered = data.filter(item => {
+                      const signalMatch = signalTypes.includes('N/A') || selectedSignalTypes.includes(item.signalType);
+                      const laneMatch = laneTypes.includes('N/A') || selectedLaneTypes.includes(item.laneType);
+                      const phaseMatch = phaseNos.includes('N/A') || selectedPhaseNos.includes(item.phaseNo);
+                      return signalMatch && laneMatch && phaseMatch;
+                    });
+
+                    console.log('Filtered Performance Data:', filtered);
+                    setFilteredData(filtered);
+                  }
+
+                  if (expandedSection === 'Recommendations') {
+                    const allRecoData = Object.entries(recommendationDataMap).flatMap(([key, values]) =>
+                      values.filter(d => selectedPhaseNos.includes(d.phaseNo))
+                    );
+
+                    console.log('Filtered Recommendation Data:', allRecoData);
+                    setFilteredData(allRecoData);
+                  }
+
+                  setShowFigure(true);
+                }}
               >
                 Create Chart
               </button>
@@ -324,7 +398,7 @@ function Dashboard() {
           </>
         )}
 
-        {noDataFound && (
+        {filtersLocked && showFigure && noDataFound && (
           <div className="no-data-box">
             <h4>No data found for the following condition:</h4>
             <ul>
@@ -337,10 +411,83 @@ function Dashboard() {
           </div>
         )}
 
-        {showFigure && (
+        {/* RENDER LINE CHART FOR PERFORMANCE */}
+        {showFigure && expandedSection === 'Performance Measures' && (
           <div className="visualization-box">
-            <h3>Chart Area</h3>
             <LineChart data={filteredData} />
+          </div>
+        )}
+        {/* ✅ RENDER RECOMMENDATION HEATMAP WITH K DROPDOWN INLINE */}
+        {showFigure && expandedSection === 'Recommendations' && (
+          <div className="visualization-box">
+            {(Array.isArray(selectedSubOption) ? selectedSubOption : [selectedSubOption])
+              .filter(subOpt => recommendationDataMap[subOpt]?.length > 0)
+              .map((subOpt, index) => {
+                const kOptions = Array.from(new Set(
+                  recommendationDataMap[subOpt].map(d => d.k).filter(k => k != null)
+                )).sort((a, b) => a - b);
+
+                return (
+                  <div key={index} style={{ marginBottom: '2.5rem' }}>
+                    {/* ✅ Per-Plot K Filter */}
+                    {kOptions.length > 0 && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        backgroundColor: '#f0f0f0',
+                        padding: '10px 16px',
+                        marginBottom: '1rem',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        width: 'fit-content'
+                      }}>
+                        <label
+                          title={`k is a decay constant in the conflict model.\n• Lower k picks up more minor conflicts (only very high conflict exposure will show as risky).\n• Higher k picks up more minor conflicts (even moderate conflict looks risky).`}
+                          style={{
+                            marginRight: '12px',
+                            fontWeight: 'bold',
+                            fontSize: '16px',
+                            color: '#333',
+                            cursor: 'help'
+                          }}
+                        >
+                          Select K ({subOpt})
+                        </label>
+                        <select
+                          value={selectedKMap[subOpt] || ''}
+                          onChange={(e) =>
+                            setSelectedKMap(prev => ({
+                              ...prev,
+                              [subOpt]: parseFloat(e.target.value)
+                            }))
+                          }
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: 'white',
+                            border: '1px solid #ccc',
+                            fontSize: '16px'
+                          }}
+                        >
+                          {kOptions.map(k => (
+                            <option key={k} value={k}>
+                              {k.toFixed(3)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* ✅ Per-Plot Heatmap */}
+                    <Heatmap
+                      dataMap={{
+                        filtered: filteredData.filter(d => d.feature === featureNameMap[subOpt])
+                      }}
+                      selectedK={selectedKMap[subOpt]}
+                      selectedSubOption={subOpt}
+                    />
+                  </div>
+                );
+              })}
           </div>
         )}
       </main>
@@ -349,5 +496,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
 
