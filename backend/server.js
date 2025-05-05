@@ -20,6 +20,12 @@ app.use('/api/intersections', intersectionRoutes);
 const measureRoutes = require('./routes/measures');
 app.use('/api/measures', measureRoutes);
 
+const recommendationRoutes = require('./routes/recommendation');
+app.use('/api/recommendation', recommendationRoutes);
+
+const rankingRoutes = require('./routes/ranking');
+app.use('/api/ranking', rankingRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
